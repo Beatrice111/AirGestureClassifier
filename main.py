@@ -1,4 +1,5 @@
 import numpy as np
+import knn_dtw_class as dtw
 
 N_users = 10
 
@@ -25,3 +26,8 @@ training_x = all_data[:900]
 training_y = all_labels[:900]
 testing_x = all_data[900:]
 testing_y = all_labels[900:]
+
+m = dtw.KnnDtw()
+m.fit(training_x, training_y)
+print m.predict(testing_x)
+
