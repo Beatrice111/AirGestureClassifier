@@ -29,5 +29,10 @@ testing_y = all_labels[900:]
 
 m = dtw.KnnDtw()
 m.fit(training_x, training_y)
-print m.predict(testing_x)
+predictions = m.predict(testing_x)[0]
 
+num_correct_predictions = 0
+for i in range(len(testing_y)):
+	if predictions[i] == testing_y[i]:
+		num_correct_predictions += 1
+print "number of correct predictions is ", num_correct_predictions
