@@ -1,0 +1,13 @@
+(lp0
+S'B'
+p1
+ag1
+ag1
+ag1
+ag1
+ag1
+ag1
+ag1
+ag1
+ag1
+a.
