@@ -1,3 +1,5 @@
+# Code from https://github.com/markdregan/K-Nearest-Neighbors-with-Dynamic-Time-Warping
+
 import sys
 import collections
 import itertools
@@ -86,6 +88,53 @@ class KnnDtw(object):
         
         # Return DTW distance given window 
         return cost[-1, -1]
+
+    def _dtw_match(self, ts_a, ts_b, d = lambda x,y: np.linalg.norm(x-y)):
+        ts_a, ts_b = np.array(ts_a), np.array(ts_b)
+        M, N = len(ts_a), len(ts_b)
+        cost = sys.maxint * np.ones((M, N))
+        # If the predecessor is on the left, set to be 1; 
+        # If the predecessor is on the top, set to be -1.
+        # If the predecessor is on the top left, set to be 0.
+        predecessor = np.zeros((M, N))
+
+        # Initialize the first row and column
+        cost[0, 0] = d(ts_a[0], ts_b[0])
+        for i in xrange(1, M):
+            cost[i, 0] = cost[i-1, 0] + d(ts_a[i], ts_b[0])
+            predecessor[i, 0] = -1
+
+        for j in xrange(1, N):
+            cost[0, j] = cost[0, j-1] + d(ts_a[0], ts_b[j])
+            predecessor[0, j] = 1
+
+        for i in xrange(1, M):
+            for j in xrange(max(1, i - self.max_warping_window),
+                            min(N, i + self.max_warping_window)):
+                if cost[i-1, j-1] <= cost[i, j-1] and cost[i-1, j-1] <= cost[i-1, j]:
+                    cost[i, j] = cost[i-1, j-1] + d(ts_a[i], ts_b[j])
+                    predecessor[i, j] = 0
+                elif cost[i, j-1] <= cost[i-1, j-1] and cost[i, j-1] <= cost[i-1, j]:
+                    cost[i, j] = cost[i, j-1] + d(ts_a[i], ts_b[j])
+                    predecessor[i, j] = 1
+                else:
+                    cost[i, j] = cost[i-1, j] + d(ts_a[i], ts_b[j])
+                    predecessor[i, j] = -1
+
+        x = M - 1
+        y = N - 1
+        result = []
+        while x != 0 or y != 0:
+            result = [(x, y)] + result
+            if predecessor[x, y] == 1:
+                y -= 1
+            elif predecessor[x, y] == -1:
+                x -= 1
+            else:
+                x -= 1
+                y -= 1
+        result = [(0, 0)] + result
+        return result
     
     def _dist_matrix(self, x, y):
         """Computes the M x N distance matrix between the training
@@ -169,3 +218,15 @@ class KnnDtw(object):
         mode_proba = mode_data[1]/self.n_neighbors
 
         return mode_label.ravel(), mode_proba.ravel()
+
+    def dtw_matches(self, y):
+        y = np.array(y)
+        dm = self._dist_matrix(y, self.x)
+        
+        neighbor_indices = np.argmin(dm, axis = 1)
+        results = []
+        for i in range(len(y)):
+            ind = neighbor_indices[i]
+            # print self.l[ind]
+            results.append((ind, self._dtw_match(y[i], self.x[ind])))
+        return results

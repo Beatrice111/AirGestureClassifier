@@ -1,6 +1,6 @@
 # AirGestureClassifier
 
-We use mobile phone's gyroscope and accelerator data to classify letters written in the air. The repo contains the collected data, python training scripts and an IOS app.
+We use mobile phone's gyroscope and accelerator data to classify letters written in the air. The repo contains the collected data and DTW algorithm in Python.
 
 ## Data
 
